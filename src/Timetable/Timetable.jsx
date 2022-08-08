@@ -1,22 +1,35 @@
 import AddBoxIcon from '@mui/icons-material/AddBox';
 import { Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from "@mui/material";
 import React, { useCallback, useState } from "react";
+import { useRecoilValue } from 'recoil';
 import InputModal from '../InputModal/InputModal';
-// import { useRecoilValue } from "recoil";
-// import { timeTableState } from "../store/store";
+import { timeTableState } from "../store/store";
 import TimetableRow from "./TimetableRow";
 
-// [9, 10, ... 19]
 const hourData = Array.from({length: 11}, (i, j) => j + 9);
 
 
 function Timetable() {
 
+  const timeTableData = useRecoilValue(timeTableState);
   const [showModal, setShowModal] = useState(false);
+  const [editInfo, setEditInfo] = useState({});
   const handleClose = useCallback(() => {
-    setShowModal(false);
+    setShowModal(false)
+    setEditInfo({})
   }, [])
-  // const timeTableData = useRecoilValue(timeTableState);
+  const Edit = useCallback((day, id) => {
+    const {start, end, name, color} = timeTableData[day].find(lectureInfo => lectureInfo.id === id);    
+    setEditInfo({
+      dayData: day,
+      startTimeData: start,
+      endTimeData: end,
+      lectureNameData: name,
+      colorData: color,
+      idNum: id
+    })
+    setShowModal(true)
+  }, [timeTableData]);
 
   return (
     <>
@@ -48,14 +61,14 @@ function Timetable() {
             hourData.map((time, index) => (
               <TableRow key={index}>
                 <TableCell style={{ backgroundColor: "#E4EFE7" }} align="center">{`${time}:00 - ${time+1}:00`}</TableCell>
-                <TimetableRow timeNum={time}/>
+                <TimetableRow timeNum={time} Edit={Edit}/>
               </TableRow>
             ))
           }
         </TableBody>
       </Table>
     </TableContainer>
-    <InputModal showModal={showModal} handleClose={handleClose}/>
+    <InputModal showModal={showModal} handleClose={handleClose} {...editInfo} />
     </>
   );
 }
